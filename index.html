@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="description" content="SplitFlux: Learning to Decouple Content and Style from a Single Image (CVPR 2026)">
+  <meta name="keywords" content="SplitFlux, Flux, LoRA, Content-Style Disentanglement, Stylization, Image Generation, CVPR 2026">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SplitFlux: Learning to Decouple Content and Style from a Single Image</title>
+
+  <meta property="og:title" content="SplitFlux: Learning to Decouple Content and Style from a Single Image">
+  <meta property="og:description" content="A Flux-based framework that disentangles content and style from a single image via Rank-Constrained Adaptation and Visual-Gated LoRA. CVPR 2026.">
+  <meta property="og:image" content="static/images/teaser.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet" href="./static/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+
+  <style>
+    .container.is-max-desktop {
+      max-width: 1200px !important;
+      padding: 0 2rem;
+    }
+    @media screen and (max-width: 1024px) {
+      .container.is-max-desktop { max-width: 90% !important; padding: 0 1rem; }
+    }
+    .publication-title {
+      font-size: 2.5rem !important;
+      line-height: 1.2;
+    }
+    @media screen and (max-width: 768px) {
+      .publication-title { font-size: 1.8rem !important; }
+    }
+    .teaser-image {
+      display: block;
+      width: 100%;
+      max-width: 1100px;
+      height: auto;
+      margin: 0 auto;
+      transition: transform 0.3s ease;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .teaser-image:hover { transform: scale(1.02); }
+    /* Result-caption sits under each figure: always centered, normal weight */
+    .result-caption {
+      text-align: center;
+      margin-top: 0.6rem;
+      margin-bottom: 1.4rem;
+      color: #555;
+      font-style: italic;
+    }
+    /* Override Bulma's .content text-align: justify for direct image children
+       so margin:auto centering works as expected. */
+    .content > img,
+    .content .teaser-image { margin-left: auto; margin-right: auto; }
+    ol.steps-list { padding-left: 1.4rem; }
+    ol.steps-list li { margin-bottom: 0.6rem; line-height: 1.55; }
+    .result-caption {
+      font-weight: bold;
+      margin-top: 0.5rem;
+      margin-bottom: 1rem;
+      color: #333;
+    }
+  </style>
+
+  <script src="./static/js/jquery.min.js"></script>
+  <script src="./static/js/main.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/index.js"></script>
+</head>
+
+<body>
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-1 publication-title">
+            SplitFlux: Learning to Decouple Content and Style from a Single Image
+          </h1>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">Yitong Yang<sup>1</sup>,&ensp;</span>
+            <span class="author-block">Yinglin Wang<sup>1&#8224;</sup>,&ensp;</span>
+            <span class="author-block">Changshuo Wang<sup>3</sup>,&ensp;</span>
+            <span class="author-block">Yongjun Zhang<sup>4</sup>,&ensp;</span>
+            <span class="author-block">Ziyang Chen<sup>4</sup>,&ensp;</span>
+            <span class="author-block">
+              <a href="https://heshuting555.github.io/">Shuting He</a><sup>1,2&#8224;</sup>
+            </span>
+          </div>
+
+          <div class="is-size-6 publication-authors" style="margin-top: 0.4rem;">
+            <span class="author-block">
+              <sup>1</sup>School of Computing and Artificial Intelligence, Shanghai University of Finance and Economics
+            </span>
+            <br>
+            <span class="author-block">
+              <sup>2</sup>MoE Key Laboratory of Interdisciplinary Research of Computation and Economics
+            </span>
+            <br>
+            <span class="author-block"><sup>3</sup>University College London</span>
+            &nbsp;&nbsp;
+            <span class="author-block"><sup>4</sup>Guizhou University</span>
+          </div>
+
+          <div class="is-size-6 publication-authors">
+            <span class="author-block"><sup>&#8224;</sup>Corresponding Author</span>
+          </div>
+
+          <div class="is-size-5 publication-authors" style="margin-top: 0.7rem;">
+            <span class="author-block"><font color="red"><b>CVPR 2026</b></font></span>
+          </div>
+
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <!-- Paper / arXiv -->
+              <span class="link-block">
+                <a href="https://arxiv.org/pdf/2511.15258" target="_blank"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon"><i class="fas fa-file-pdf"></i></span>
+                  <span>Paper</span>
+                </a>
+              </span>
+              <span class="link-block">
+                <a href="https://arxiv.org/abs/2511.15258" target="_blank"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                    <img src="./static/images/arxiv.png" alt="arXiv">
+                  </span>
+                  <span>arXiv</span>
+                </a>
+              </span>
+              <!-- Code -->
+              <span class="link-block">
+                <a href="https://github.com/yangyt46/SplitFlux" target="_blank"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon"><i class="fab fa-github"></i></span>
+                  <span>Code</span>
+                </a>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- Teaser -->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body has-text-centered">
+      <img src="./static/images/teaser.jpg"
+           alt="SplitFlux teaser: content-style disentanglement results"
+           class="teaser-image">
+    </div>
+  </div>
+</section>
+
+
+<!-- Abstract -->
+<section class="section hero is-light">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+            Disentangling image content and style is essential for customized image generation.
+            Existing SDXL-based methods struggle to achieve high-quality results, while the recently
+            proposed <b>Flux</b> model fails to achieve effective content-style separation due to its
+            underexplored characteristics. To address these challenges, we conduct a systematic
+            analysis of Flux and make two key observations: <b>(1)</b> Single Stream Blocks are
+            essential for image generation; and <b>(2)</b> Early single stream blocks mainly control
+            <i>content</i>, whereas later blocks govern <i>style</i>.
+          </p>
+          <p>
+            Based on these insights, we propose <b>SplitFlux</b>, which disentangles content and
+            style by fine-tuning the single stream blocks via LoRA, enabling the disentangled content
+            to be re-embedded into new contexts. It includes two key components:
+            <b>(1) Rank-Constrained Adaptation</b> &mdash; to preserve content identity and structure,
+            we compress the rank and amplify the magnitude of updates within specific blocks,
+            preventing content leakage into style blocks;
+            <b>(2) Visual-Gated LoRA</b> &mdash; we split the content LoRA into two branches with
+            different ranks, guided by image saliency. The high-rank branch preserves primary
+            subject information, while the low-rank branch encodes residual details, mitigating
+            content overfitting and enabling seamless re-embedding.
+          </p>
+          <p>
+            Extensive experiments demonstrate that SplitFlux consistently outperforms
+            state-of-the-art methods, achieving superior content preservation and stylization
+            quality across diverse scenarios.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- Analysis of Flux -->
+<section class="hero is-small">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column">
+          <h2 class="title is-3">Analysis of Flux</h2>
+          <div class="content has-text-justified">
+            <p>
+              We probe the Flux architecture by replacing the prompt fed into individual blocks and
+              observing the change in the generated image. This reveals which blocks are essential
+              for image generation and how content and style are spatially distributed across the
+              network.
+            </p>
+            <img src="./static/images/fig1_flux_analysis.png"
+                 alt="Flux framework and prompt-replacement probing"
+                 class="teaser-image">
+            <p class="result-caption" style="text-align:center; font-weight:normal;">
+              <b>Figure 1.</b> (A) Flux framework. (B) Prompt-replacement protocol used to test the
+              functional contribution of each block.
+            </p>
+
+            <p style="margin-top: 1.5rem;">
+              Applying a LoRA to a single block at a time shows that <b>early</b> single stream
+              blocks lock in <i>content</i>, while <b>later</b> blocks lock in <i>style</i> &mdash;
+              motivating SplitFlux's block-specific design.
+            </p>
+            <img src="./static/images/fig3_block_lora.png"
+                 alt="Block-specific LoRA isolates content vs. style"
+                 class="teaser-image">
+            <p class="result-caption" style="text-align:center; font-weight:normal;">
+              <b>Figure 3.</b> Applying block-specific LoRAs reveals that early blocks govern
+              content and later blocks govern style.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- Method -->
+<section class="hero is-small is-light">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column">
+          <h2 class="title is-3">Method</h2>
+          <div class="content has-text-justified">
+            <p>
+              Building on the analysis above, SplitFlux trains <b>content</b> and <b>style</b>
+              blocks separately with two paired LoRAs. To prevent content from leaking into style we
+              add <b>Rank-Constrained Adaptation (RCA)</b>; to retain subject identity while
+              enabling re-embedding we add <b>Visual-Gated LoRA (VGRA)</b>.
+            </p>
+            <img src="./static/images/fig2_method.png"
+                 alt="SplitFlux method overview"
+                 class="teaser-image">
+            <p class="result-caption" style="text-align:center; font-weight:normal;">
+              <b>Figure 2.</b> Overview of SplitFlux. Content and style blocks are trained with two
+              different prompts; RCA preserves content identity and VGRA enables seamless
+              re-embedding.
+            </p>
+
+            <p style="margin-top: 1.5rem;">Our main contributions can be summarized as:</p>
+            <ol class="steps-list">
+              <li>
+                We provide a <b>systematic analysis of Flux</b>, revealing that Single Stream Blocks
+                are essential for image generation and that early/late blocks specialise in content
+                and style respectively.
+              </li>
+              <li>
+                We propose <b>SplitFlux</b>, a fine-tuning framework that decouples content and
+                style from a single reference image by training block-specific LoRAs on top of Flux.
+              </li>
+              <li>
+                We introduce <b>Rank-Constrained Adaptation (RCA)</b>, which compresses the LoRA
+                rank and amplifies update magnitude in selected blocks to prevent content from
+                leaking into style.
+              </li>
+              <li>
+                We introduce <b>Visual-Gated LoRA (VGRA)</b>, a two-branch saliency-guided design
+                that preserves the primary subject in a high-rank branch while encoding residual
+                details in a low-rank branch &mdash; mitigating content overfitting and enabling
+                seamless re-embedding into new contexts.
+              </li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- Disentanglement Results -->
+<section class="hero is-small">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column">
+          <h2 class="title is-3">Content / Style Disentanglement</h2>
+          <div class="content has-text-justified">
+            <p>
+              From a <b>single reference image</b>, SplitFlux separately extracts content and style.
+              The content LoRA generates the same subject in arbitrary new scenes; the style LoRA
+              applies the reference's visual style to arbitrary new subjects.
+            </p>
+
+            <img src="./static/images/fig4_disentangle_compare.png"
+                 alt="Qualitative disentanglement comparison with prior work"
+                 class="teaser-image">
+            <p class="result-caption" style="text-align:center; font-weight:normal;">
+              <b>Figure 4.</b> Qualitative comparison for disentanglement. SplitFlux preserves
+              identity and structure of the disentangled content noticeably better than prior work.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- Merger Results -->
+<section class="hero is-small is-light">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column">
+          <h2 class="title is-3">Content + Style Merging</h2>
+          <div class="content has-text-justified">
+            <p>
+              Because content and style LoRAs are trained independently, they can be freely
+              combined: any extracted content can be rendered in any extracted style with high
+              fidelity to both.
+            </p>
+            <img src="./static/images/fig6_merger_compare.png"
+                 alt="Qualitative comparison of merger results"
+                 class="teaser-image">
+            <p class="result-caption" style="text-align:center; font-weight:normal;">
+              <b>Figure 6.</b> Qualitative comparison for Merger. SplitFlux achieves the best
+              combination, maintaining high fidelity in both content and style.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- Recontextualization -->
+<section class="hero is-small">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column">
+          <h2 class="title is-3">Recontextualization</h2>
+          <div class="content has-text-justified">
+            <p>
+              SplitFlux re-embeds the disentangled content into new contexts described by free-form
+              text prompts, preserving subject identity while flexibly varying scene, pose and
+              composition.
+            </p>
+
+            <img src="./static/images/fig5_recontext_compare.png"
+                 alt="Recontextualization comparison with prior work"
+                 class="teaser-image">
+            <p class="result-caption" style="text-align:center; font-weight:normal;">
+              <b>Figure 5.</b> Comparison for Recontextualization. SplitFlux flexibly adapts to
+              varying contexts while accurately preserving both subject and style.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- Ablation Studies -->
+<section class="hero is-small is-light">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column">
+          <h2 class="title is-3">Ablation Studies</h2>
+          <div class="content has-text-justified">
+            <p>
+              We ablate the two key components of SplitFlux. <b>RCA</b> compresses the rank and
+              amplifies the magnitude of LoRA updates in a narrow window of late blocks
+              (we use <i>&alpha; = 2</i>, Blocks 30&ndash;31). <b>VGRA</b> splits the content LoRA
+              into a high-rank branch (we use <i>r<sup>cnt</sup> = 48</i>) and a low-rank
+              residual branch.
+            </p>
+
+            <img src="./static/images/fig7_ablation_rca.png"
+                 alt="Ablation on Rank-Constrained Adaptation"
+                 class="teaser-image">
+            <p class="result-caption" style="text-align:center; font-weight:normal;">
+              <b>Figure 7.</b> Ablation on RCA — magnitude scale <i>&alpha;</i> and selected blocks.
+            </p>
+
+            <img src="./static/images/fig8_ablation_vgra.png"
+                 alt="Ablation on Visual-Gated LoRA"
+                 class="teaser-image"
+                 style="margin-top: 1.5rem;">
+            <p class="result-caption" style="text-align:center; font-weight:normal;">
+              <b>Figure 8.</b> Ablation on VGRA — content-branch rank <i>r<sup>cnt</sup></i>.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- BibTeX -->
+<section class="section" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title">BibTeX</h2>
+    <pre><code>@inproceedings{yang2026splitflux,
+  title     = {SplitFlux: Learning to Decouple Content and Style from a Single Image},
+  author    = {Yang, Yitong and Wang, Yinglin and Wang, Changshuo and Zhang, Yongjun and Chen, Ziyang and He, Shuting},
+  booktitle = {IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year      = {2026}
+}</code></pre>
+  </div>
+</section>
+
+
+<footer class="footer">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+          <p>
+            This website is licensed under a
+            <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative
+            Commons Attribution-ShareAlike 4.0 International License</a>.
+          </p>
+          <p>
+            This page was built from the
+            <a href="https://github.com/eliahuhorwitz/Academic-project-page-template">Academic
+            Project Page Template</a> (also used by
+            <a href="https://kwai-kolors.github.io/CoTyle/">CoTyle</a> and
+            <a href="https://nerfies.github.io/">Nerfies</a>). Thanks to the original authors for
+            sharing the template.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
